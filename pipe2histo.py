@@ -1,51 +1,49 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#!/usr/bin/env python
+'''Program which takes floats (integers) through a pipe and 
+plots a histogram with bin size (<BINS>) into a specified outfile <OUTFILE>.png'''
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.mlab as mlab
+import pylab
 import sys
+plt.style.use('ggplot')
 
-def parse_stdin():
+def parse_stdin_for_histo():
+	x = []
 	for line in sys.stdin:
-    	
+		if not line.strip():
+			pass
+		else:
+			value = line.rstrip('\n')
+			try:
+				float(value)
+			except:
+				print "[WARN] - " + value + " is not a number"
+			else:
+				x.append(float(value))	
+	return x
 
-N = 5
-menMeans = (20, 35, 30, 35, 27)
-menStd =   (2, 3, 4, 1, 2)
-
-ind = np.arange(N)  # the x locations for the groups
-width = 0.35       # the width of the bars
-
-fig, ax = plt.subplots()
-rects1 = ax.bar(ind, menMeans, width, color='r', yerr=menStd)
-
-womenMeans = (25, 32, 34, 20, 25)
-womenStd =   (3, 5, 2, 3, 3)
-rects2 = ax.bar(ind+width, womenMeans, width, color='y', yerr=womenStd)
-
-# add some text for labels, title and axes ticks
-ax.set_ylabel('Scores')
-ax.set_title('Scores by group and gender')
-ax.set_xticks(ind+width)
-ax.set_xticklabels( ('G1', 'G2', 'G3', 'G4', 'G5') )
-
-ax.legend( (rects1[0], rects2[0]), ('Men', 'Women') )
-
-def autolabel(rects):
-    # attach some text labels
-    for rect in rects:
-        height = rect.get_height()
-        ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%int(height),
-                ha='center', va='bottom')
-
-autolabel(rects1)
-autolabel(rects2)
-
-plt.show()
+def plot_histo(x, bin, outfile):
+	axHist = plt.axes()
+	axHist.grid(True, which="major", lw=.5, linestyle='-')
+	axHist.set_xlim( min(x)-2, max(x)+2 )
+	axHist.hist(x, bins = bin, histtype='bar', stacked=False, normed=False, lw = 1, facecolor='#f6b114')
+	plt.plot()
+	data = np.array(x)
+	y, binEdges = np.histogram(data,bins=bin)
+	axHist.set_ylim( min(y), max(y)+10 )
+	bincenters = 0.5 * (binEdges[1:] + binEdges[:-1])
+	pylab.plot(bincenters,y,'-', color='#004c00')
+	pylab.savefig(outfile + "." + fig_format, format=fig_format)
 
 if __name__ == '__main__':
-
-	for line in sys.stdin:
-    	sys.stdout.write(line)
+	fig_format = 'png'
+	if len(sys.argv) != 3:
+		sys.exit("USAGE : ... | pipe2histo.py <BINS> <OUT>")
+	bin = int(sys.argv[1])
+	outfile = sys.argv[2]
+	x = parse_stdin_for_histo()
+	plot_histo(x, bin, outfile)
