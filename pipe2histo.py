@@ -13,6 +13,7 @@ plt.style.use('ggplot')
 
 def parse_stdin_for_histo():
 	x = []
+	strings = {}
 	for line in sys.stdin:
 		if not line.strip():
 			pass
@@ -22,9 +23,32 @@ def parse_stdin_for_histo():
 				float(value)
 			except:
 				print "[WARN] - " + value + " is not a number"
+				value = value.replace(" ", "_ ")
+				strings[str(value)] = strings.get(str(value), 0) + 1
 			else:
 				x.append(float(value))	
-	return x
+
+	return x, strings
+
+def plot_bar(string_dict, outfile):
+	width = 0.30
+	counts, strings = [], []
+ 
+	for key in sorted(string_dict, key=string_dict.get, reverse=False):
+		counts.append(string_dict[key])
+		strings.append(key)
+	index = np.arange(len(strings))
+	plt.figure(1, figsize=(20,20), dpi=400)
+	ax = plt.axes()
+	bar = ax.barh(index, counts, width, facecolor='#f6b114')
+	ax.set_xscale('log')
+	ax.set_yticks(index+width/2)
+	ax.set_yticklabels( strings, rotation='horizontal')
+	ax.grid(True, which="major", lw=.5, linestyle='-')
+	ax.set_xlim( min(counts)-0.5, max(counts) + int( 0.20 * max(counts) ) ) 
+	#ax.set_ylim( 10, 1000 )
+	ax.plot()
+	pylab.savefig(outfile + "." + fig_format, format=fig_format)
 
 def plot_histo(x, bin, outfile):
 	axHist = plt.axes()
@@ -41,9 +65,17 @@ def plot_histo(x, bin, outfile):
 
 if __name__ == '__main__':
 	fig_format = 'png'
-	if len(sys.argv) != 3:
-		sys.exit("USAGE : ... | pipe2histo.py <BINS> <OUT>")
-	bin = int(sys.argv[1])
-	outfile = sys.argv[2]
-	x = parse_stdin_for_histo()
-	plot_histo(x, bin, outfile)
+	if len(sys.argv) < 2:
+		sys.exit("USAGE : ... | pipe2histo.py <OUT> [<BINS>]")
+	outfile = sys.argv[1]
+	bin = 10
+	try:
+		bin = int(sys.argv[2]) 
+	except:
+		pass
+
+	x, strings = parse_stdin_for_histo()
+	if strings:
+		plot_bar(strings, outfile)
+	if x:
+		plot_histo(x, bin, outfile)
