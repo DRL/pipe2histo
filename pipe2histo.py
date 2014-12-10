@@ -14,7 +14,7 @@ import sys
 #mat.use('pdf')
 plt.style.use('ggplot')
 
-def parse_stdin_for_histo(min_value, max_value):
+def parse_stdin_for_histo():
 	x = []
 	strings = {}
 	for line in sys.stdin:
@@ -29,10 +29,6 @@ def parse_stdin_for_histo(min_value, max_value):
 				value = value.replace(" ", "_ ")
 				strings[str(value)] = strings.get(str(value), 0) + 1
 			else:
-				if value > max_value:
-					value = max_value
-				elif value < min_value:
-					value = min_value
 				x.append(float(value))	
 
 	return x, strings
@@ -73,17 +69,15 @@ def plot_histo(x, bin, outfile):
 if __name__ == '__main__':
 	fig_format = 'png'
 	if len(sys.argv) < 2:
-		sys.exit("USAGE : ... | pipe2histo.py <OUT> [<BINS>] [<MIN> <MAX>]")
+		sys.exit("USAGE : ... | pipe2histo.py <OUT> [<BINS>]")
 	outfile = sys.argv[1]
 	bin = 10
 	try:
 		bin = int(sys.argv[2]) 
-		min_value = float(sys.argv[3])
-		max_value = float(sys.argv[4])
 	except:
 		pass
 
-	x, strings = parse_stdin_for_histo(min_value, max_value)
+	x, strings = parse_stdin_for_histo()
 	if strings:
 		plot_bar(strings, outfile)
 	if x:
