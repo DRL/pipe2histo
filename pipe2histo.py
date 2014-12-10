@@ -56,7 +56,7 @@ def plot_bar(string_dict, outfile):
 def plot_histo(x, bin, outfile):
 	axHist = plt.axes()
 	axHist.grid(True, which="major", lw=.5, linestyle='-')
-	axHist.set_xlim( min(float(x))-2, max(float(x))+2 )
+	axHist.set_xlim( min(x)-2, max(x)+2 )
 	axHist.hist(x, bins = bin, histtype='bar', stacked=False, normed=False, lw = 1, facecolor='#f6b114')
 	plt.plot()
 	data = np.array(x)
